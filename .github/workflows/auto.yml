@@ -2,31 +2,27 @@ name: YouTube Bot
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "30 2 * * *"  # daily auto run (8 AM IST)
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install system deps
+      - name: Install deps
         run: |
           sudo apt update
-          sudo apt install -y ffmpeg imagemagick
+          sudo apt install -y ffmpeg
 
       - name: Install Python libs
         run: |
-          pip install --upgrade pip
-          pip install moviepy gtts imageio imageio-ffmpeg numpy
+          python -m pip install --upgrade pip
+          pip install moviepy==1.0.3 gtts
 
       - name: Run bot
         run: python main.py
