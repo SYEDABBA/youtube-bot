@@ -1,9 +1,10 @@
 import os
+import json
 import random
-from moviepy import *
+from moviepy import ImageClip, AudioFileClip
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-import json
+from google.oauth2.credentials import Credentials
 
 # ==============================
 # LOAD TOKEN FROM GITHUB SECRET
@@ -15,33 +16,34 @@ if token_json:
         f.write(token_json)
 
 # ==============================
-# YOUTUBE AUTH
+# YOUTUBE AUTH (FIXED)
 # ==============================
-with open("token.json") as f:
-    creds_data = json.load(f)
-
-youtube = build("youtube", "v3", credentials=None)
+creds = Credentials.from_authorized_user_file("token.json")
+youtube = build("youtube", "v3", credentials=creds)
 
 # ==============================
-# SIMPLE AI SCRIPT (RANDOM TEXT)
+# SIMPLE SCRIPT GENERATOR
 # ==============================
 scripts = [
     "Ek ladka tha jo kabhi haar nahi maanta tha...",
-    "Zindagi ek safar hai, aur har din ek nayi kahani...",
+    "Zindagi ek safar hai, har din ek nayi kahani...",
     "Success ka raaz hai consistency aur hard work..."
 ]
 
 script = random.choice(scripts)
 
 # ==============================
-# CREATE AUDIO (FAKE SHORT)
+# AUDIO (OPTIONAL)
 # ==============================
-audio = AudioFileClip("sample.mp3") if os.path.exists("sample.mp3") else None
-
-duration = audio.duration if audio else 5
+if os.path.exists("sample.mp3"):
+    audio = AudioFileClip("sample.mp3")
+    duration = audio.duration
+else:
+    audio = None
+    duration = 5
 
 # ==============================
-# CREATE VIDEO
+# VIDEO CREATE (FIXED)
 # ==============================
 image = ImageClip("image.jpg").with_duration(duration)
 
@@ -50,7 +52,7 @@ if audio:
 else:
     video = image
 
-video = video.resized(height=1280)  # vertical
+video = video.resized(height=1280)
 video.write_videofile("output.mp4", fps=24)
 
 # ==============================
