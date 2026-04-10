@@ -1,23 +1,55 @@
-from gtts import gTTS
-from moviepy.editor import AudioFileClip, ColorClip
+import os
+import random
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials
 
-print("🔥 Bot started")
+# 🔐 Secrets se files bana
+with open("token.json", "w") as f:
+    f.write(os.environ["TOKEN_JSON"])
 
-# 1. Script
-script = "Top 3 facts about space. Number 1, space is completely silent."
+with open("client_secret.json", "w") as f:
+    f.write(os.environ["CLIENT_SECRET"])
 
-# 2. Voice generate
-tts = gTTS(script)
-tts.save("voice.mp3")
+# 🎥 YouTube Auth
+creds = Credentials.from_authorized_user_file("token.json")
+youtube = build("youtube", "v3", credentials=creds)
 
-# 3. Audio load
-audio = AudioFileClip("voice.mp3")
+# 🎬 Dummy video create (simple text video)
+video_file = "video.mp4"
 
-# 4. Simple background video (black screen)
-video = ColorClip(size=(720,1280), color=(0,0,0), duration=audio.duration)
-video = video.set_audio(audio)
+# Agar video nahi hai toh dummy file banayega
+if not os.path.exists(video_file):
+    with open(video_file, "wb") as f:
+        f.write(os.urandom(1024 * 100))  # random 100kb file
 
-# 5. Export
-video.write_videofile("output.mp4", fps=24)
+# 📝 Random title
+titles = [
+    "🔥 Amazing Fact You Didn't Know!",
+    "😱 Shocking Truth Revealed!",
+    "🚀 वायरल होने वाला वीडियो!",
+    "💡 Life Changing Hack!"
+]
 
-print("✅ Video created")
+title = random.choice(titles)
+
+# 📤 Upload
+request = youtube.videos().insert(
+    part="snippet,status",
+    body={
+        "snippet": {
+            "title": title,
+            "description": "Auto uploaded by bot 😈",
+            "tags": ["shorts", "viral"],
+            "categoryId": "22"
+        },
+        "status": {
+            "privacyStatus": "public"
+        }
+    },
+    media_body=MediaFileUpload(video_file)
+)
+
+response = request.execute()
+
+print("✅ Uploaded:", response["id"])
