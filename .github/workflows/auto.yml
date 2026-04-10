@@ -3,7 +3,7 @@ name: AI YouTube Bot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 14 * * *"   # Roz 7:30 PM India (approx)
+    - cron: "0 14 * * *"   # Daily ~7:30 PM IST
 
 jobs:
   run:
@@ -20,13 +20,21 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 📦 Install all libraries
+      # 🧰 Install ffmpeg (IMPORTANT)
+      - name: Install ffmpeg
+        run: |
+          sudo apt update
+          sudo apt install -y ffmpeg
+
+      # 📦 Install Python libs
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install gtts moviepy requests google-api-python-client google-auth google-auth-oauthlib
+          pip install gtts requests
+          pip install moviepy imageio imageio-ffmpeg
+          pip install google-api-python-client google-auth google-auth-oauthlib
 
-      # 🤖 Run AI Bot
+      # 🤖 Run bot
       - name: Run bot
         run: python main.py
         env:
