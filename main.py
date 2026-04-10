@@ -1,22 +1,28 @@
-from gtts import gTTS
-import os
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials
 
-print("Bot started 🔥")
+print("Uploading शुरू 🔥")
 
-# Step 1: Text
-text = "AI will replace many jobs in future 😱"
+creds = Credentials.from_authorized_user_file("token.json")
 
-# Step 2: Voice
-tts = gTTS(text)
-tts.save("voice.mp3")
+youtube = build("youtube", "v3", credentials=creds)
 
-print("Voice created ✅")
-
-# Step 3: Create video using ffmpeg
-os.system(
-    "ffmpeg -f lavfi -i color=c=black:s=720x1280:d=10 "
-    "-i voice.mp3 -vf \"drawtext=text='AI FACT 😱':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2\" "
-    "-shortest -y output.mp4"
+request = youtube.videos().insert(
+    part="snippet,status",
+    body={
+        "snippet": {
+            "title": "AI Fact 😱",
+            "description": "Auto uploaded 🚀",
+            "tags": ["ai", "shorts"],
+            "categoryId": "28"
+        },
+        "status": {
+            "privacyStatus": "public"
+        }
+    },
+    media_body=MediaFileUpload("output.mp4")
 )
 
-print("Video created 🎬")
+response = request.execute()
+print("Uploaded ✅", response)
