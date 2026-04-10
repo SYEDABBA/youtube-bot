@@ -1,33 +1,50 @@
 import os
 import json
 import random
+import requests
 from moviepy import ImageClip, AudioFileClip
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
 
+print("🚀 STARTING BOT...")
+
 # ==============================
-# LOAD TOKEN FROM GITHUB SECRET
+# TOKEN LOAD
 # ==============================
 token_json = os.environ.get("TOKEN_JSON")
 
-if token_json:
-    with open("token.json", "w") as f:
-        f.write(token_json)
+if not token_json:
+    raise Exception("❌ TOKEN_JSON missing in secrets")
+
+with open("token.json", "w") as f:
+    f.write(token_json)
 
 # ==============================
-# YOUTUBE AUTH (FIXED)
+# YOUTUBE AUTH
 # ==============================
 creds = Credentials.from_authorized_user_file("token.json")
 youtube = build("youtube", "v3", credentials=creds)
 
+print("✅ YouTube Auth Done")
+
 # ==============================
-# SIMPLE SCRIPT GENERATOR
+# AUTO DOWNLOAD IMAGE
+# ==============================
+if not os.path.exists("image.jpg"):
+    print("⬇️ Downloading image...")
+    img_url = "https://picsum.photos/720/1280"
+    img_data = requests.get(img_url).content
+    with open("image.jpg", "wb") as f:
+        f.write(img_data)
+
+# ==============================
+# SCRIPT GENERATOR
 # ==============================
 scripts = [
-    "Ek ladka tha jo kabhi haar nahi maanta tha...",
-    "Zindagi ek safar hai, har din ek nayi kahani...",
-    "Success ka raaz hai consistency aur hard work..."
+    "Zindagi badalne ka time aa gaya hai!",
+    "Success chahiye? Aaj se start karo!",
+    "Har din ek nayi opportunity hoti hai!"
 ]
 
 script = random.choice(scripts)
@@ -35,16 +52,21 @@ script = random.choice(scripts)
 # ==============================
 # AUDIO (OPTIONAL)
 # ==============================
+audio = None
+duration = 5
+
 if os.path.exists("sample.mp3"):
-    audio = AudioFileClip("sample.mp3")
-    duration = audio.duration
-else:
-    audio = None
-    duration = 5
+    try:
+        audio = AudioFileClip("sample.mp3")
+        duration = audio.duration
+    except:
+        print("⚠️ Audio load failed, skipping")
 
 # ==============================
-# VIDEO CREATE (FIXED)
+# VIDEO CREATE
 # ==============================
+print("🎬 Creating video...")
+
 image = ImageClip("image.jpg").with_duration(duration)
 
 if audio:
@@ -53,18 +75,28 @@ else:
     video = image
 
 video = video.resized(height=1280)
-video.write_videofile("output.mp4", fps=24)
+
+video.write_videofile(
+    "output.mp4",
+    fps=24,
+    codec="libx264",
+    audio_codec="aac"
+)
+
+print("✅ Video Created")
 
 # ==============================
 # UPLOAD TO YOUTUBE
 # ==============================
+print("📤 Uploading...")
+
 request = youtube.videos().insert(
     part="snippet,status",
     body={
         "snippet": {
             "title": script[:50],
             "description": script,
-            "tags": ["AI", "shorts"],
+            "tags": ["AI", "shorts", "motivation"],
             "categoryId": "22"
         },
         "status": {
@@ -75,4 +107,6 @@ request = youtube.videos().insert(
 )
 
 response = request.execute()
-print("✅ Uploaded:", response)
+
+print("🔥 SYSTEM ONLINE 😈")
+print("✅ Uploaded:", response.get("id"))
