@@ -1,42 +1,28 @@
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-from google.oauth2.credentials import Credentials
 import os
+from moviepy.editor import TextClip, CompositeVideoClip, AudioFileClip
+from gtts import gTTS
 
-print("Bot started 🔥")
+print("🔥 Bot started")
 
-# Check files exist
-if not os.path.exists("output.mp4"):
-    raise Exception("❌ output.mp4 not found")
+# 1. Script generate (simple demo)
+script = "Top 3 facts about space. Number 1, space is completely silent."
 
-if not os.path.exists("token.json"):
-    raise Exception("❌ token.json not found")
+# 2. Voice generate
+tts = gTTS(script)
+tts.save("voice.mp3")
 
-# Load credentials
-creds = Credentials.from_authorized_user_file("token.json")
+# 3. Create text video
+clip = TextClip(script, fontsize=50, color='white', size=(720,1280))
+clip = clip.set_duration(10)
 
-youtube = build("youtube", "v3", credentials=creds)
+# 4. Add audio
+audio = AudioFileClip("voice.mp3")
+video = clip.set_audio(audio)
 
-print("Uploading शुरू 🚀")
+# 5. Export video
+video.write_videofile("output.mp4", fps=24)
 
-# Upload video
-request = youtube.videos().insert(
-    part="snippet,status",
-    body={
-        "snippet": {
-            "title": "AI Fact 😱",
-            "description": "Auto uploaded by bot 🔥 #shorts",
-            "tags": ["ai", "shorts", "facts"],
-            "categoryId": "28"
-        },
-        "status": {
-            "privacyStatus": "public"
-        }
-    },
-    media_body=MediaFileUpload("output.mp4")
-)
+print("✅ Video created")
 
-response = request.execute()
-
-print("✅ Uploaded Successfully")
-print(response)
+# 6. Upload (basic print for now)
+print("🚀 Ready to upload:", os.path.exists("output.mp4"))
