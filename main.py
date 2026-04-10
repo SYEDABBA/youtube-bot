@@ -70,7 +70,7 @@ image = ImageClip("image.jpg").with_duration(duration)
 # TEXT SUBTITLE
 txt = TextClip(
     script,
-    fontsize=60,
+    font_size=60,
     color="white",
     size=(700, None),
     method="caption"
