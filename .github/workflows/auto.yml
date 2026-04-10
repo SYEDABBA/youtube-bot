@@ -1,43 +1,28 @@
-name: AI YouTube Bot
+name: run-bot
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 14 * * *"   # Daily ~7:30 PM IST
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      # 📥 Repo clone
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 🐍 Python setup
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: 3.11
 
-      # 🧰 Install ffmpeg (IMPORTANT)
       - name: Install ffmpeg
-        run: |
-          sudo apt update
-          sudo apt install -y ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      # 📦 Install Python libs
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install gtts requests
-          pip install moviepy imageio imageio-ffmpeg
-          pip install google-api-python-client google-auth google-auth-oauthlib
+      - name: Install deps
+        run: pip install -r requirements.txt
 
-      # 🤖 Run bot
       - name: Run bot
-        run: python main.py
         env:
           TOKEN_JSON: ${{ secrets.TOKEN_JSON }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python main.py
