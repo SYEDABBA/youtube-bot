@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Python libs
         run: |
-          pip install gTTS moviepy pillow
+          pip install gTTS moviepy pillow google-api-python-client google-auth google-auth-oauthlib
 
       - name: Run bot
         run: python main.py
