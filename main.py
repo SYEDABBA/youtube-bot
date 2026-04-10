@@ -1,7 +1,7 @@
 import os
 import requests
 from gtts import gTTS
-from moviepy.editor import *
+from moviepy import *
 
 # 🔐 Secrets
 API_KEY = os.environ["GROQ_API_KEY"]
