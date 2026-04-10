@@ -3,7 +3,7 @@ import json
 import random
 import requests
 from gtts import gTTS
-from moviepy import *
+from moviepy import ImageClip, AudioFileClip
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
@@ -30,7 +30,7 @@ youtube = build("youtube", "v3", credentials=creds)
 print("✅ YouTube Connected")
 
 # ==============================
-# AI SCRIPT (HOOK BASED)
+# SCRIPT (HOOK BASED)
 # ==============================
 scripts = [
     "99% log ye galti karte hai jo unki life barbaad kar deti hai...",
@@ -42,7 +42,7 @@ scripts = [
 script = random.choice(scripts)
 
 # ==============================
-# TEXT TO SPEECH (AI VOICE)
+# TEXT TO SPEECH
 # ==============================
 print("🎤 Generating voice...")
 tts = gTTS(script)
@@ -55,28 +55,19 @@ duration = audio.duration
 # AUTO IMAGE DOWNLOAD
 # ==============================
 if not os.path.exists("image.jpg"):
+    print("⬇️ Downloading image...")
     img_url = "https://picsum.photos/720/1280"
-    img = requests.get(img_url).content
+    img_data = requests.get(img_url).content
     with open("image.jpg", "wb") as f:
-        f.write(img)
+        f.write(img_data)
 
 # ==============================
-# VIDEO CREATE
+# VIDEO CREATE (NO TEXTCLIP = NO ERROR)
 # ==============================
 print("🎬 Creating video...")
 
 image = ImageClip("image.jpg").with_duration(duration)
-
-# TEXT SUBTITLE
-txt = TextClip(
-    script,
-    font_size=60,
-    color="white",
-    size=(700, None),
-    method="caption"
-).with_position(("center", "bottom")).with_duration(duration)
-
-video = CompositeVideoClip([image, txt]).with_audio(audio)
+video = image.with_audio(audio)
 
 video = video.resized(height=1280)
 
@@ -90,7 +81,7 @@ video.write_videofile(
 print("✅ Video Ready")
 
 # ==============================
-# UPLOAD
+# UPLOAD TO YOUTUBE
 # ==============================
 print("📤 Uploading...")
 
