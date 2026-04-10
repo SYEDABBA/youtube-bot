@@ -1,44 +1,32 @@
 import os
 import requests
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-from google.oauth2.credentials import Credentials
+from gtts import gTTS
+from moviepy.editor import *
 
 # 🔐 Secrets
-with open("token.json", "w") as f:
-    f.write(os.environ["TOKEN_JSON"])
+API_KEY = os.environ["GROQ_API_KEY"]
 
-with open("client_secret.json", "w") as f:
-    f.write(os.environ["CLIENT_SECRET"])
+# 🧠 AI Script (simple)
+topic = "Motivation"
 
-# 🎥 Download sample video
-video_url = "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
-video_file = "video.mp4"
+script = f"{topic} is the key to success. Never give up. Keep pushing forward."
 
-r = requests.get(video_url)
-with open(video_file, "wb") as f:
-    f.write(r.content)
+# 🎙️ Voice generate
+tts = gTTS(script)
+tts.save("voice.mp3")
 
-# 🔑 Auth
-creds = Credentials.from_authorized_user_file("token.json")
-youtube = build("youtube", "v3", credentials=creds)
+# 🖼️ Image download
+img_url = "https://picsum.photos/720/1280"
+img_data = requests.get(img_url).content
 
-# 📤 Upload
-request = youtube.videos().insert(
-    part="snippet,status",
-    body={
-        "snippet": {
-            "title": "🔥 Auto Upload Test",
-            "description": "Bot working 😈",
-            "tags": ["shorts"],
-            "categoryId": "22"
-        },
-        "status": {
-            "privacyStatus": "public"
-        }
-    },
-    media_body=MediaFileUpload(video_file)
-)
+with open("image.jpg", "wb") as f:
+    f.write(img_data)
 
-response = request.execute()
-print("✅ Uploaded:", response["id"])
+# 🎬 Create video
+audio = AudioFileClip("voice.mp3")
+image = ImageClip("image.jpg").set_duration(audio.duration)
+
+video = image.set_audio(audio)
+video.write_videofile("video.mp4", fps=24)
+
+print("✅ AI Video Created")
